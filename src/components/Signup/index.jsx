@@ -1,4 +1,7 @@
 import React, { useState } from 'react'
+import { createUserWithEmailAndPassword } from 'firebase/auth'
+import { auth } from '../Firebase/firebaseConfig'
+import { Link, useNavigate } from 'react-router-dom'
 
 const Signup = () => {
 
@@ -10,15 +13,33 @@ const Signup = () => {
   }
 
   const [loginData, setLoginData] = useState(data)
+  const [error, setError] = useState('')
 
   const handleChange = e => {
     setLoginData({...loginData, [e.target.id]: e.target.value})
   }
 
+  const handleSubmit = e => {
+    e.preventDefault();
+    const { email, password } = loginData
+    createUserWithEmailAndPassword(auth, email, password)
+    .then(user => {
+      setLoginData({...data});
+    })
+    .catch(error => {
+      setError(error);
+      setLoginData({...data})
+    })
+  }
+
+  const errorMsg = error !== '' && <span>{error.message}</span>
+
   const { pseudo, email, password, confirmPassword } = loginData;
 
   const btn = pseudo === '' || email === '' || password === '' || password !== confirmPassword ?
   <button disabled>Inscription</button> : <button>Inscription</button>
+
+
 
   return (
     <div className='signUpLoginBox'>
@@ -27,7 +48,8 @@ const Signup = () => {
             </div>
             <div className='formBoxRight'>
               <div className="formContent">
-                <form>
+                <form onSubmit={handleSubmit}>
+                  {errorMsg}
                   <h2>Inscription</h2>
                   <div className='inputBox'>
                     <input onChange={handleChange} value={pseudo} type="text" id="pseudo" autoComplete="off" required />
@@ -51,6 +73,9 @@ const Signup = () => {
 
                   {btn}
                 </form>
+                <div className='linkContainer'>
+                  <Link className='simpleLink' to="/login">Déjà inscrit ? Connectez-vous !</Link>
+                </div>
               </div>
             </div>
         </div>    
